@@ -216,6 +216,22 @@ func authorize(w http.ResponseWriter, r *http.Request){
 
 }
 
+func delete(response http.ResponseWriter, request *http.Request){
+    response.Header().Set("Content-Type","application/json")
+	var user User
+	json.NewDecoder(request.Body).Decode(&user)
+    ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
+    collection := client.Database("houseware").Collection("users")
+
+    result, err := collection.DeleteOne(ctx, bson.M{"username": "Kanika"})
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Printf("DeleteOne removed %v document(s)\n", result.DeletedCount)
+
+}
+
     // list all the users
 
   func showAll(response http.ResponseWriter, request *http.Request){
@@ -228,13 +244,25 @@ func authorize(w http.ResponseWriter, r *http.Request){
     if err != nil {
         log.Fatal(err)
     }
-    var episodes []bson.M
-    if err = cursor.All(ctx, &episodes); err != nil {
+    var accounts []bson.M
+    if err = cursor.All(ctx, &accounts); err != nil {
         log.Fatal(err)
     }
-    json.NewEncoder(response).Encode(episodes)
-    log.Println(episodes)
+    json.NewEncoder(response).Encode(accounts)
+    log.Println(accounts)
   }
+
+  // deleting the old cookie
+
+  func Logout(w http.ResponseWriter, r *http.Request) {
+
+    c := http.Cookie{
+        Name:   "token",
+        MaxAge: -1}
+    http.SetCookie(w, &c)
+
+    w.Write([]byte("Old cookie deleted. Logged out!\n"))
+}
     
 
     func main(){
@@ -246,10 +274,11 @@ func authorize(w http.ResponseWriter, r *http.Request){
 
 	router.HandleFunc("/user/login",userLogin).Methods("POST")
 	router.HandleFunc("/user/create_user",createUser).Methods("POST")
-    // router.HandleFunc("/user/:username",deleteRecord).Methods("DELETE")
+    router.HandleFunc("/user/delete",delete).Methods("DELETE")
     router.HandleFunc("/user/authorize",authorize).Methods("POST")
     router.HandleFunc("/user/all",showAll).Methods("GET")
     router.HandleFunc("/user/token_refresh",refresh_token).Methods("POST")
+    router.HandleFunc("/user/logout",Logout).Methods("POST")
     log.Fatal(http.ListenAndServe("localhost:8000", router))
 
 }
