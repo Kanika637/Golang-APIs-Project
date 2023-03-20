@@ -154,6 +154,87 @@ func authorize(w http.ResponseWriter, r *http.Request){
     }
 
 
+    // refresh the token
+  
+  func refresh_token(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	tokenStr := cookie.Value
+
+	claims := &Claims{}
+
+	tkn, err := jwt.ParseWithClaims(tokenStr, claims,
+		func(t *jwt.Token) (interface{}, error) {
+			return SECRET_KEY, nil
+		})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if !tkn.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	return
+	// }
+
+	expirationTime := time.Now().Add(time.Minute * 5)
+
+	claims.ExpiresAt = expirationTime.Unix()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(SECRET_KEY)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w,
+		&http.Cookie{
+			Name:    "refresh_token",
+			Value:   tokenString,
+			Expires: expirationTime,
+		})
+
+
+}
+
+    // list all the users
+
+  func showAll(response http.ResponseWriter, request *http.Request){
+    response.Header().Set("Content-Type","application/json")
+	var user User
+	json.NewDecoder(request.Body).Decode(&user)
+	collection := client.Database("houseware").Collection("users")
+	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
+    cursor, err := collection.Find(ctx, bson.M{})
+    if err != nil {
+        log.Fatal(err)
+    }
+    var episodes []bson.M
+    if err = cursor.All(ctx, &episodes); err != nil {
+        log.Fatal(err)
+    }
+    json.NewEncoder(response).Encode(episodes)
+    log.Println(episodes)
+  }
     
 
     func main(){
@@ -167,6 +248,8 @@ func authorize(w http.ResponseWriter, r *http.Request){
 	router.HandleFunc("/user/create_user",createUser).Methods("POST")
     // router.HandleFunc("/user/:username",deleteRecord).Methods("DELETE")
     router.HandleFunc("/user/authorize",authorize).Methods("POST")
+    router.HandleFunc("/user/all",showAll).Methods("GET")
+    router.HandleFunc("/user/token_refresh",refresh_token).Methods("POST")
     log.Fatal(http.ListenAndServe("localhost:8000", router))
 
 }
