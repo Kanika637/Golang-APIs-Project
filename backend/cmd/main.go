@@ -13,7 +13,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
     "fmt"
-  
+    "go.mongodb.org/mongo-driver/bson/primitive"
+    
+    
     
    
 )
@@ -21,8 +23,10 @@ var SECRET_KEY = []byte("gosecretkey")
 
 //user data
 type User struct{
-    Username string          `json:"username" bson:"username"`
-	Password string          `json:"password" bson:"password"`
+    Id       primitive.ObjectID `bson:"_id,omitempty"`
+    Username string             `json:"username" bson:"username"`
+	Password string             `json:"password" bson:"password"`
+    
 }
 
 // for the jwt token
@@ -216,20 +220,26 @@ func authorize(w http.ResponseWriter, r *http.Request){
 
 }
 
-func delete(response http.ResponseWriter, request *http.Request){
+//delete a user
+
+func delete_user(response http.ResponseWriter, request *http.Request){
+
+    vars := mux.Vars(request)
+    username := vars["username"]
     response.Header().Set("Content-Type","application/json")
 	var user User
-	json.NewDecoder(request.Body).Decode(&user)
-    ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
+    json.NewDecoder(request.Body).Decode(&user)
+    
     collection := client.Database("houseware").Collection("users")
+    filter := bson.M{"username": username}
 
-    result, err := collection.DeleteOne(ctx, bson.M{"username": "Kanika"})
-if err != nil {
+    deleteCount, err := collection.DeleteOne(context.Background(), filter)
+
+if err !=nil{
     log.Fatal(err)
 }
-
-fmt.Printf("DeleteOne removed %v document(s)\n", result.DeletedCount)
-
+json.NewEncoder(response).Encode(deleteCount)
+    
 }
 
     // list all the users
@@ -269,12 +279,13 @@ fmt.Printf("DeleteOne removed %v document(s)\n", result.DeletedCount)
 	log.Println("Starting the application")
 
 	router:= mux.NewRouter()
+    
 	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
 	client,_= mongo.Connect(ctx,options.Client().ApplyURI("mongodb://localhost:27017"))
 
 	router.HandleFunc("/user/login",userLogin).Methods("POST")
 	router.HandleFunc("/user/create_user",createUser).Methods("POST")
-    router.HandleFunc("/user/delete",delete).Methods("DELETE")
+    router.HandleFunc("/user/{username}",delete_user).Methods("DELETE")
     router.HandleFunc("/user/authorize",authorize).Methods("POST")
     router.HandleFunc("/user/all",showAll).Methods("GET")
     router.HandleFunc("/user/token_refresh",refresh_token).Methods("POST")
