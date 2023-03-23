@@ -14,10 +14,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
     "fmt"
     "go.mongodb.org/mongo-driver/bson/primitive"
-    
-    
-    
-   
 )
 var SECRET_KEY = []byte("gosecretkey")
 
@@ -90,7 +86,8 @@ func userLogin(w http.ResponseWriter, request *http.Request){
         return
     }
 
-    expirationTime := time.Now().Add(time.Minute * 2)
+    //this is the expiration time i.e. 60 mins
+    expirationTime := time.Now().Add(time.Minute * 60)
 
 	claims := &Claims{
 		Username: user.Username,
@@ -193,10 +190,12 @@ func authorize(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
+    //when 30 seconds will be remaining for the token to get expire, we will refresh it
+
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 30*time.Second {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	expirationTime := time.Now().Add(time.Minute * 5)
 
@@ -283,8 +282,9 @@ json.NewEncoder(response).Encode(deleteCount)
 	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
 	client,_= mongo.Connect(ctx,options.Client().ApplyURI("mongodb://localhost:27017"))
 
-	router.HandleFunc("/user/login",userLogin).Methods("POST")
+	
 	router.HandleFunc("/user/create_user",createUser).Methods("POST")
+    router.HandleFunc("/user/login",userLogin).Methods("POST")
     router.HandleFunc("/user/{username}",delete_user).Methods("DELETE")
     router.HandleFunc("/user/authorize",authorize).Methods("POST")
     router.HandleFunc("/user/all",showAll).Methods("GET")
