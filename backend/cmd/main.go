@@ -6,37 +6,26 @@ import (
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
-	"encoding/json"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
     "fmt"
-    "go.mongodb.org/mongo-driver/bson/primitive"
+	myTypes "github.com/HousewareHQ/backend-engineering-octernship/models" 
+   
 )
+
+// accessing the type struct
+
+type User= myTypes.User
+type Claims= myTypes.Claims
+
 var SECRET_KEY = []byte("gosecretkey")
-
-//user data
-type User struct{
-    Id       primitive.ObjectID `bson:"_id,omitempty"`
-    Username string             `json:"username" bson:"username"`
-	Password string             `json:"password" bson:"password"`
-    
-}
-
-// for the jwt token
-
-type Claims struct{
-    Username string `json:"username"`
-    jwt.StandardClaims
-}
-
 var client *mongo.Client
 
-//hashing the password
-
-func getHash(pwd []byte) string {
+func GetHash(pwd []byte) string {
     hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
     if err != nil {
         log.Println(err)
@@ -44,14 +33,14 @@ func getHash(pwd []byte) string {
     return string(hash)
 }
 
-
 //adding a user
 
-func createUser(response http.ResponseWriter, request *http.Request){
+func CreateUser(response http.ResponseWriter, request *http.Request){
 	response.Header().Set("Content-Type","application/json")
-	var user User
+	
+    var user User
 	json.NewDecoder(request.Body).Decode(&user)
-	user.Password = getHash([]byte(user.Password))
+	user.Password = GetHash([]byte(user.Password))
 	collection := client.Database("houseware").Collection("users")
 	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
 	result,_ := collection.InsertOne(ctx,user)
@@ -61,7 +50,7 @@ func createUser(response http.ResponseWriter, request *http.Request){
 
 //logging in the user
 
-func userLogin(w http.ResponseWriter, request *http.Request){
+func UserLogin(w http.ResponseWriter, request *http.Request){
     w.Header().Set("Content-Type","application/json")
     var user User
     var dbUser User
@@ -120,7 +109,7 @@ func userLogin(w http.ResponseWriter, request *http.Request){
 
 // checking the authorization by matching the token
 
-func authorize(w http.ResponseWriter, r *http.Request){
+func Authorize(w http.ResponseWriter, r *http.Request){
     cookie, err := r.Cookie("token")
     if err !=nil{
         if err == http.ErrNoCookie{
@@ -157,7 +146,7 @@ func authorize(w http.ResponseWriter, r *http.Request){
 
     // refresh the token
   
-  func refresh_token(w http.ResponseWriter, r *http.Request) {
+  func Refresh_token(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
@@ -221,7 +210,7 @@ func authorize(w http.ResponseWriter, r *http.Request){
 
 //delete a user
 
-func delete_user(response http.ResponseWriter, request *http.Request){
+func Delete_user(response http.ResponseWriter, request *http.Request){
 
     vars := mux.Vars(request)
     username := vars["username"]
@@ -243,7 +232,7 @@ json.NewEncoder(response).Encode(deleteCount)
 
     // list all the users
 
-  func showAll(response http.ResponseWriter, request *http.Request){
+  func ShowAll(response http.ResponseWriter, request *http.Request){
     response.Header().Set("Content-Type","application/json")
 	var user User
 	json.NewDecoder(request.Body).Decode(&user)
@@ -273,23 +262,27 @@ json.NewEncoder(response).Encode(deleteCount)
     w.Write([]byte("Old cookie deleted. Logged out!\n"))
 }
     
-
     func main(){
 	log.Println("Starting the application")
 
+    
 	router:= mux.NewRouter()
     
 	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
 	client,_= mongo.Connect(ctx,options.Client().ApplyURI("mongodb://localhost:27017"))
 
-	
-	router.HandleFunc("/user/create_user",createUser).Methods("POST")
-    router.HandleFunc("/user/login",userLogin).Methods("POST")
-    router.HandleFunc("/user/{username}",delete_user).Methods("DELETE")
-    router.HandleFunc("/user/authorize",authorize).Methods("POST")
-    router.HandleFunc("/user/all",showAll).Methods("GET")
-    router.HandleFunc("/user/token_refresh",refresh_token).Methods("POST")
+    // router.HandleFunc("/user/sample",func Sample(w http.ResponseWriter, r *http.Request){
+    //     fmt.Println("Working")
+
+	// }).Methods("GET")
+    
+	router.HandleFunc("/user/create_user",CreateUser).Methods("POST")
+    router.HandleFunc("/user/login",UserLogin).Methods("POST")
+    router.HandleFunc("/user/{username}",Delete_user).Methods("DELETE")
+    router.HandleFunc("/user/authorize",Authorize).Methods("POST")
+    router.HandleFunc("/user/all",ShowAll).Methods("GET")
+    router.HandleFunc("/user/token_refresh",Refresh_token).Methods("POST")
     router.HandleFunc("/user/logout",Logout).Methods("POST")
-    log.Fatal(http.ListenAndServe("localhost:8000", router))
+    log.Fatal(http.ListenAndServe("localhost:9000", router))
 
 }
