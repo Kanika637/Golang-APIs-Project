@@ -145,6 +145,8 @@ I have used MongoDB database for the integration for which I have used MongoDB C
 
 ![Alt text](/images/Screenshot%20(25).png)
 
+![Alt text](images/Screenshot%20(21).png)
+
 <br>
 
 ## Refresh Token
