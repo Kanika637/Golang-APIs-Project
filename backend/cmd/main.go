@@ -13,9 +13,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
     "fmt"
-	myTypes "github.com/HousewareHQ/backend-engineering-octernship/models" 
+    myTypes "github.com/HousewareHQ/backend-engineering-octernship/models"
+	
    
 )
+
 
 // accessing the type struct
 
@@ -76,7 +78,7 @@ func UserLogin(w http.ResponseWriter, request *http.Request){
     }
 
     //this is the expiration time i.e. 60 mins
-    expirationTime := time.Now().Add(time.Minute * 60)
+    expirationTime := time.Now().Add(time.Minute * 2)
 
 	claims := &Claims{
 		Username: user.Username,
@@ -140,7 +142,7 @@ func Authorize(w http.ResponseWriter, r *http.Request){
             w.WriteHeader(http.StatusUnauthorized)
             return
         }
-        w.Write([] byte(fmt.Sprint("hello, %s", claims.Username)))
+        w.Write([] byte(fmt.Sprint("Hello,", claims.Username)))
     }
 
 
@@ -263,7 +265,7 @@ json.NewEncoder(response).Encode(deleteCount)
 }
     
     func main(){
-	log.Println("Starting the application")
+	
 
     
 	router:= mux.NewRouter()
@@ -271,11 +273,7 @@ json.NewEncoder(response).Encode(deleteCount)
 	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
 	client,_= mongo.Connect(ctx,options.Client().ApplyURI("mongodb://localhost:27017"))
 
-    // router.HandleFunc("/user/sample",func Sample(w http.ResponseWriter, r *http.Request){
-    //     fmt.Println("Working")
-
-	// }).Methods("GET")
-    
+    log.Println("Starting the application")
 	router.HandleFunc("/user/create_user",CreateUser).Methods("POST")
     router.HandleFunc("/user/login",UserLogin).Methods("POST")
     router.HandleFunc("/user/{username}",Delete_user).Methods("DELETE")
@@ -283,6 +281,7 @@ json.NewEncoder(response).Encode(deleteCount)
     router.HandleFunc("/user/all",ShowAll).Methods("GET")
     router.HandleFunc("/user/token_refresh",Refresh_token).Methods("POST")
     router.HandleFunc("/user/logout",Logout).Methods("POST")
-    log.Fatal(http.ListenAndServe("localhost:9000", router))
+
+    log.Fatal(http.ListenAndServe("localhost:8000", router))
 
 }

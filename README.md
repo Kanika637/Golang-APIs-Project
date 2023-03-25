@@ -1,94 +1,167 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-c66648af7eb3fe8bc4f294546bfd86ef473780cde1dea487d3c4ff354943c9ae.svg)](https://classroom.github.com/online_ide?assignment_repo_id=10423469&assignment_repo_type=AssignmentRepo)
-## Houseware
-
-### Company information 
-
-Houseware's vision is to empower the next generation of knowledge workers by putting the data warehouse in their hands, in the language they speak. Houseware is purpose-built for the Data Cloud’s untouched creators, empowering internal apps across organizations. 
-
-### Why participate in an Octernship with Houseware
-
-Houseware is changing the way the data warehouse is leveraged, and we want you to help build Houseware! Our team came together to answer the singular question, "how can we flip the value of the data warehouse to the ones who really need it, to the ones who drive decisions". 
-
-In this role, you'll have the opportunity to work as a Backend engineer with the Houseware team on multiple customer-facing projects, the role being intensive in technical architecture and backend engineering. The ability to have a constant pulse on the engineering team’s shipping velocity, while accounting for stability and technical debt looking forward is crucial.
-
-### Octernship role description
-
-We're looking for backend developers to join the Houseware team. 
-
-We are hell-bent on building a forward-looking product, something that constantly pushes us to think by first principles and question assumptions, building a team that is agile in adapting and ever curious. While fast-paced execution is one of the prerequisites in this role, equally important is the ability to pause and take stock of where product/engineering is heading from a long-term perspective. Your initiative is another thing that we would expect to shine through here, as you continuously navigate through ambiguous waters while working with vigor on open-ended questions - all to solve problems for and empathize with the end users.
-
-You are expected to own the backend and infrastructure stack end-to-end, understand the business use cases, map it to the best-in-class engineering systems while maintaining a great developer experience. This role involves a high level of attention to detail, debugging and testing skills, as well as long-term thinking with respect to the scalability of our platform. 
+# `/docs`
 
 
-| Octernship info  | Timelines and Stipend |
-| ------------- | ------------- |
-| Assignment Deadline  | 26 March 2023  |
-| Octernship Duration  | 3-6 Months  |
-| Monthly Stipend  | $600 USD  |
+ # File Structure 
 
-### Recommended qualifications
+**Models**: The user schema and claims schema is present in models.go inside the models folder.
 
-You’d be a great fit if:
+**Main.go**: All the handlers and the main function are present in main.go file inside backend>cmd.
 
-- You’re proficient in Golang and Python, having prior experience building backend systems and hands-on experience with AWS/GCP.
-- You’re familiar with the modern data stack and have a good understanding of Infrastructure-as-code tooling like Terraform.
-- Plus Points if you’re a contributor to open-source, we’d love to see your work!
+<br>
 
-### Eligibility
+# Packages Used
 
-To participate, you must be:
+The packages involved in the project are:
 
-* A [verified student](https://education.github.com/discount_requests/pack_application) on Global Campus
+- context
+- time
+- log
+- net/http
+- github.com/gorilla/mux
+- go.mongodb.org/mongo-driver/mongo
+- go.mongodb.org/mongo-driver/mongo/options
+- encoding/json
+- go.mongodb.org/mongo-driver/bson
+- golang.org/x/crypto/bcrypt
+- github.com/dgrijalva/jwt-go
+- fmt 
+- go.mongodb.org/mongo-driver/bson/primitive
+- github.com/dgrijalva/jwt-go
 
-* 18 years or older
+<br>
 
-* Active contributor on GitHub (monthly)
+## Type structs
+- There are two type structs:
+  - `User`: This stores the username and password for the data.
+  - `Claims`: This is for storing the claims for the jwt token.
+  
+# Setting up the Database
 
-# Assignment
+I have used MongoDB database for the integration for which I have used MongoDB Compass in my local system and also mongo on my terminal.
 
-## Implement an Authorization+Authentication service in Golang
+## Process
+- In the main function i.e. in main.go file, the interation of database is written.
+- I used the package mongo which provides a MongoDB Driver API for Go.
+- Declared the vairable `client` like `var client *mongo.Client`.
+- For controlling the timeout of requests, I used the context.WithTimeout declared with a variable `ctx`.
+- I used MongoDB compass for this application and copied the connection string i.e. `mongodb://localhost:27017`
+- Next for connecting the application to the MongoDB server, the client variable was used `Client().ApplyURI`
+- The main func starts with a confirmation line of `Starting the application` which confirms that everything is working fine.
 
-### Task instructions
+<br>
 
-The assignment is to create a backend API service in Golang that handles authorization and authentication for a web app. The details of the web app are as follows:
-- A simple web app where users in an organization can signin and list all other users in their organization
-- Logging in is performed by supplying a `username, password` combination
-- Note that all passwords should be hashed when stored in a database for security purposes
-- For simplicity, assume that the existing users have already been registered and we are not concerned about a user registration flow here.
-- The user should be logged in with a JWT token, that refreshes every one hour.
-- The user should be able to logout as well.
-- There are admin privileges assigned to a few users, which gives them the ability to add new user accounts or delete existing user accounts from their organization.
-- All non-admin users should be able to see other user accounts but shouldn't be able to add/delete any user accounts.
-- Note that any user shouldn't be able to view/add/delete user accounts into any other organization.
+# Roles and Privileges
+- I have made a `Admin` user which will have the rights of `readWrite` i.e., the Admin can  Add any user as well as Delete one.
 
-The API should follow REST API conventions, feel free to design the API structure as you may. The API should cover the following functionalities:
-- User Login
-- User Logout
-- Admin User adds a new User account(by providing the username & password)
-- Admin User deletes an existing User account from their organization
-- List all Users in their organization
+<br>
 
-Note: Do add unit tests(for success & failure) for each API endpoint.
+![Alt text](images/Screenshot_20230323_113233.png)
 
-Provided in this Github template is a Golang Standard repository, you'd have to design an ideal architecture/stack for this problem
-- Golang framework for this API
-- Which Database shall be used to store the user details?
-- The ORM that shall be used for interfacing with the Database
-- DB design
+- I also added couple of users also which will have only the `read` privileges.
 
-Do document the design decisions and the rationale behind the same in a README file.
+![Alt text](/images/Screenshot_20230323_113233.png)
 
+<br>
 
-### Task Expectations
+![Alt text](/images/Screenshot_20230323_113233.png) 
 
-- Instructions in the Readme to setup the API & the relevant database
-- Postman/Swagger/OpenAPI spec so that the APIs can be tested
-- The task will be evaluated on the: fulfillment of the requirements and correctness of the API responses, in addition to the simplicity & architecture of the solution
+<br>
 
-### Task submission
+# All the Handlers
 
-Students are expected to use the [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow) when working on their project. 
+## Hashing the password
 
-1. Making changes on the auto generated `feedback` branch to complete the task
-2. Using the auto generated **Feedback Pull Request** for review and submission
-3. Using GitHub Discussions to ask any relevant questions regarding the project
+- For hashing the password, `golang.org/x/crypto/bcrypt` is used.
+- So that when we enter the data, the password should be saved in the hashed format.
+- In this function , I basically took `bcrypt.GenerateFromPassword` to hash the password which I am getting from the user.
+
+<br>
+
+## Setting the Routes
+- I used Gorilla Mux for setting all the routes.
+- The variable `router` was defined as `router:= mux.NewRouter()` to call all the handler functions.
+- I wanted the application to serve on localhost:8000, so `log.Fatal(http.ListenAndServe("localhost:8000", router))`.
+
+<br>
+
+## Enter data
+
+- A function named `CreateUser` is used for this request with `http` `request` and `response` parametrs. 
+- The mongo package by go, automatically creates the database and the collection if it is not present beforehand.
+- The collection is defined as `collection := client.Database("houseware").Collection("users")`
+- Database: houseware, Collection: users
+- For setting the route for this function, I used `router.HandleFunc("/user/create_user",CreateUser).Methods("POST")`
+- So the API became, `http://localhost:8000/user/create_user`
+- For this API, I used the POST request.
+
+![Alt text](/images/Screenshot%20(15).png)
+
+<br>
+
+## Login
+
+- For the login functionality, a function named `UserLogin` is created.
+- For login the username is matched as well as the password entered by the user and the hashed password is compared.
+- At every point, checks are there like `if err !=nil` to check the errors and also printing them.
+- When the login is successfull, a JWT token gets created.
+- Expiration time for the token is set to be 60 mins.
+- I have created the object of a claims and then will sign it.
+- Now the token is created with the HS256 signing method.
+- I have also set the cookie, which will be visible after the login request.
+- `http://localhost:8000/user/login`
+![Alt text](/images/Screenshot%20(16).png)
+![Alt text](/images/Screenshot%20(17).png)
+
+<br>
+
+## Delete the data
+
+- For deleting, I created the function `Delete_user`
+- For this, I chose the param as username as the admin can delte a particular data by entering the username, making sure that the each username is unique.
+- http://localhost:8000/user/{username}
+
+![Alt text](/images/Screenshot%20(19).png)
+
+<br>
+
+## Authorization
+- For the authorization, the JWT token will be checked and hence the user who has logged in will be authenticated.
+- So firstly, I am getting the cookie and creating the token string for that cookie.
+- Using the `jwt.ParseWithClaims` functions, 
+- And a message,`Hello` with name of the logged person will be printed.
+- `http://localhost:8000/user/authorize`
+
+<br>
+
+![Alt text](/images/Screenshot%20(24).png)
+
+<br>
+
+## List all the users
+
+- For listing all the users, function `ShowAll` is made, which will show all the users in the database.
+
+- `http://localhost:8000/user/all",ShowAll`
+
+![Alt text](/images/Screenshot%20(25).png)
+
+<br>
+
+## Refresh Token
+
+- For refreshing, the token will be refreshed within the last 30 seconds of the expiration time.
+-  This will be achieved by `Sub(time.Now()) > 30*time.Second`
+- After the running the following API, a token named ` refreshed_token will be generated.
+- `http://localhost:8000/user/token_refresh`
+
+![Alt text](/images/Screenshot%20(27).png)
+
+<br>
+
+## Logout
+
+- The logout will simply delete the cookie.
+- `http://localhost:8000/user/logout`
+<br>
+
+ ![Alt text](/images/Screenshot%20(28).png)
