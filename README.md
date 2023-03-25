@@ -145,7 +145,7 @@ I have used MongoDB database for the integration for which I have used MongoDB C
 
 ![Alt text](/images/Screenshot%20(25).png)
 
-![Alt text](images/Screenshot%20(21).png)
+
 
 <br>
 
@@ -167,3 +167,11 @@ I have used MongoDB database for the integration for which I have used MongoDB C
 <br>
 
  ![Alt text](/images/Screenshot%20(28).png)
+
+ <br>
+
+ ## MongoDB Database
+ 
+ <br>
+
+ ![Alt text](images/Screenshot%20(21).png)
