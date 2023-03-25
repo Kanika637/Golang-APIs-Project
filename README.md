@@ -127,8 +127,8 @@ I have used MongoDB database for the integration for which I have used MongoDB C
 ## Authorization
 - For the authorization, the JWT token will be checked and hence the user who has logged in will be authenticated.
 - So firstly, I am getting the cookie and creating the token string for that cookie.
-- Using the `jwt.ParseWithClaims` functions, 
-- And a message,`Hello` with name of the logged person will be printed.
+- Using the `jwt.ParseWithClaims` function, I I passed the claims, token string and another function which will return the claims.
+- On success, a message,`Hello` with name of the logged person will be printed.
 - `http://localhost:8000/user/authorize`
 
 <br>
